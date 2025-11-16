@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Age Calculator</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #f5f7fa;
+            --dark-color: #333;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .calculator:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .website-link {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .website-link:hover {
+            text-decoration: underline;
+        }
+        
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: end;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: white;
+        }
+        
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: var(--error-color);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .success {
+            color: var(--success-color);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .result-section {
+            margin-top: 2rem;
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-section.hidden {
+            display: none;
+        }
+        
+        .main-age {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: var(--border-radius);
+            color: white;
+        }
+        
+        .main-age-number {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .main-age-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .age-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .age-unit {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .age-unit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .age-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .age-label {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .additional-info {
+            margin: 2rem 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .info-card {
+            padding: 1.5rem;
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .next-birthday {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .next-birthday h3 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .date-verification {
+            background: var(--light-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 2rem;
+        }
+        
+        .date-verification h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+        
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .action-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: var(--success-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        @media (max-width: 768px) {
+            .calculator {
+                padding: 1.5rem;
+            }
+            
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .age-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-age-number {
+                font-size: 3rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 1rem;
+            }
+            
+            .main-age {
+                padding: 1.5rem;
+            }
+            
+            .age-value {
+                font-size: 2rem;
+            }
+            
+            .btn-primary {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="header">
+            <h1>Age Calculator</h1>
+            <p class="subtitle">Discover your exact age in years, months, and days</p>
+            <a href="https://age-calculator.com/" class="website-link" target="_blank">age-calculator.com</a>
+        </div>
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label for="birthdate">Enter Your Birth Date</label>
+                <input type="date" id="birthdate" max="">
+                <div id="date-error" class="error">Please enter a valid birth date</div>
+                <div id="date-success" class="success">Valid date entered</div>
+            </div>
+            
+            <button class="btn-primary" onclick="calculateAge()">
+                <span class="button-text">Calculate Age</span>
+                <div class="loading"></div>
+            </button>
+        </div>
+        
+        <div id="age-result" class="result-section hidden">
+            <div class="main-age">
+                <div id="total-years" class="main-age-number">0</div>
+                <div class="main-age-label">Your Current Age</div>
+            </div>
+            
+            <div class="age-breakdown">
+                <div class="age-unit">
+                    <div id="years" class="age-value">0</div>
+                    <div class="age-label">Years</div>
+                </div>
+                <div class="age-unit">
+                    <div id="months" class="age-value">0</div>
+                    <div class="age-label">Months</div>
+                </div>
+                <div class="age-unit">
+                    <div id="days" class="age-value">0</div>
+                    <div class="age-label">Days</div>
+                </div>
+            </div>
+            
+            <div class="additional-info">
+                <h3>Detailed Information</h3>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div id="total-days" class="info-value">0</div>
+                        <div class="info-label">Total Days</div>
+                    </div>
+                    <div class="info-card">
+                        <div id="total-months" class="info-value">0</div>
+                        <div class="info-label">Total Months</div>
+                    </div>
+                    <div class="info-card">
+                        <div id="total-weeks" class="info-value">0</div>
+                        <div class="info-label">Total Weeks</div>
+                    </div>
+                    <div class="info-card">
+                        <div id="day-of-week" class="info-value">-</div>
+                        <div class="info-label">Day of Birth</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-birthday">
+                <h3>NEXT BIRTHDAY</h3>
+                <p>Days remaining: <span id="days-until" class="highlight">0</span> days</p>
+            </div>
+            
+            <div class="date-verification">
+                <h3>Date Verification</h3>
+                <p>Born on: <span id="display-birthdate" class="highlight"></span></p>
+                <p>Calculated on: <span id="display-currentdate" class="highlight"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        Result copied to clipboard!
+    </div>
+
+    <script>
+        // Set max date to today and load last used date
+        document.getElementById('birthdate').max = new Date().toISOString().split('T')[0];
+        
+        // Load last entered date from localStorage
+        function loadLastDate() {
+            const lastDate = localStorage.getItem('lastBirthdate');
+            if (lastDate) {
+                document.getElementById('birthdate').value = lastDate;
+                showSuccess('Last entered date loaded');
+            }
+        }
+        
+        // Save date to localStorage
+        function saveLastDate(date) {
+            localStorage.setItem('lastBirthdate', date);
+        }
+        
+        // Real-time date validation
+        document.getElementById('birthdate').addEventListener('change', function() {
+            const birthdate = new Date(this.value);
+            const today = new Date();
+            const errorElement = document.getElementById('date-error');
+            const successElement = document.getElementById('date-success');
+            
+            if (!this.value) {
+                errorElement.style.display = 'none';
+                successElement.style.display = 'none';
+                return;
+            }
+            
+            if (birthdate > today) {
+                errorElement.textContent = 'Birth date cannot be in the future';
+                errorElement.style.display = 'block';
+                successElement.style.display = 'none';
+            } else if (birthdate < new Date('1900-01-01')) {
+                errorElement.textContent = 'Please enter a valid birth date (after 1900)';
+                errorElement.style.display = 'block';
+                successElement.style.display = 'none';
+            } else {
+                errorElement.style.display = 'none';
+                successElement.style.display = 'block';
+                saveLastDate(this.value);
+            }
+        });
+        
+        // Enter key support
+        document.getElementById('birthdate').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateAge();
+            }
+        });
+        
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = isError ? 'var(--error-color)' : 'var(--success-color)';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showSuccess(message) {
+            showToast(message, false);
+        }
+
+        function calculateNextBirthday(birthdate, today) {
+            // Create next birthday date for this year
+            let nextBirthday = new Date(today.getFullYear(), birthdate.getMonth(), birthdate.getDate());
+            
+            // If birthday has already passed this year, set for next year
+            if (nextBirthday < today) {
+                nextBirthday.setFullYear(today.getFullYear() + 1);
+            }
+            
+            // Calculate days difference
+            const diffTime = nextBirthday - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return {
+                date: nextBirthday,
+                daysUntil: diffDays
+            };
+        }
+        
+        function calculateAge() {
+            const birthdateInput = document.getElementById('birthdate');
+            const birthdate = new Date(birthdateInput.value);
+            const today = new Date();
+            
+            // Validate input
+            if (!birthdateInput.value) {
+                document.getElementById('date-error').textContent = 'Please enter your birth date';
+                document.getElementById('date-error').style.display = 'block';
+                birthdateInput.focus();
+                return;
+            }
+            
+            if (birthdate > today) {
+                document.getElementById('date-error').textContent = 'Birth date cannot be in the future';
+                document.getElementById('date-error').style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            const button = document.querySelector('.btn-primary');
+            const buttonText = document.querySelector('.button-text');
+            const loading = document.querySelector('.loading');
+            
+            buttonText.textContent = 'Calculating...';
+            loading.style.display = 'block';
+            button.disabled = true;
+            
+            // Simulate calculation delay for better UX
+            setTimeout(() => {
+                try {
+                    // Calculate full years
+                    let years = today.getFullYear() - birthdate.getFullYear();
+                    let months = today.getMonth() - birthdate.getMonth();
+                    let days = today.getDate() - birthdate.getDate();
+                    
+                    // Adjust for negative days or months
+                    if (days < 0) {
+                        months--;
+                        // Get days in previous month
+                        const lastDayOfPrevMonth = new Date(
+                            today.getFullYear(),
+                            today.getMonth(),
+                            0
+                        ).getDate();
+                        days += lastDayOfPrevMonth;
+                    }
+                    
+                    if (months < 0) {
+                        years--;
+                        months += 12;
+                    }
+                    
+                    // Calculate total values
+                    const totalDays = Math.floor((today - birthdate) / (1000 * 60 * 60 * 24));
+                    const totalMonths = years * 12 + months;
+                    const totalWeeks = Math.floor(totalDays / 7);
+                    
+                    // Calculate day of week
+                    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayOfWeek = daysOfWeek[birthdate.getDay()];
+                    
+                    // Calculate next birthday - FIXED VERSION
+                    const nextBirthdayInfo = calculateNextBirthday(birthdate, today);
+                    const daysUntilBirthday = nextBirthdayInfo.daysUntil;
+                    
+                    // Format dates for display
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const formattedBirthday = birthdate.toLocaleDateString('en-US', options);
+                    const formattedToday = today.toLocaleDateString('en-US', options);
+                    
+                    // Display results
+                    document.getElementById('total-years').textContent = years;
+                    document.getElementById('years').textContent = years;
+                    document.getElementById('months').textContent = months;
+                    document.getElementById('days').textContent = days;
+                    document.getElementById('total-days').textContent = totalDays.toLocaleString();
+                    document.getElementById('total-months').textContent = totalMonths.toLocaleString();
+                    document.getElementById('total-weeks').textContent = totalWeeks.toLocaleString();
+                    document.getElementById('day-of-week').textContent = dayOfWeek;
+                    document.getElementById('display-birthdate').textContent = formattedBirthday;
+                    document.getElementById('display-currentdate').textContent = formattedToday;
+                    document.getElementById('days-until').textContent = daysUntilBirthday;
+                    
+                    // Show result section with animation
+                    const resultSection = document.getElementById('age-result');
+                    resultSection.classList.remove('hidden');
+                    resultSection.style.display = 'block';
+                    
+                    // Save successful calculation
+                    saveLastDate(birthdateInput.value);
+                    
+                    showSuccess('Age calculated successfully!');
+                    
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    document.getElementById('date-error').textContent = 'Error calculating age. Please try again.';
+                    document.getElementById('date-error').style.display = 'block';
+                } finally {
+                    // Reset button state
+                    buttonText.textContent = 'Calculate Age';
+                    loading.style.display = 'none';
+                    button.disabled = false;
+                }
+            }, 800);
+        }
+        
+        // Initialize on load
+        window.onload = function() {
+            document.getElementById('birthdate').max = new Date().toISOString().split('T')[0];
+            loadLastDate();
+            
+            // Auto-focus on date input
+            document.getElementById('birthdate').focus();
+        };
+    </script>
+</body>
+</html>
